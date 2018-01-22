@@ -1,0 +1,17 @@
+body {
+  font: 14pt Open Sans;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.main {
+  position: absolute;
+  left: 0;
+  top: 5em;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}

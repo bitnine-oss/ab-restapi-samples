@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>AgensBrowser-bundle REST API</title>
+
+	<link rel="stylesheet" href="basic.css" />
+
+  <link rel="stylesheet" type="text/css" href="assets/css/jquery.qtip.min.css" />
+  <link rel="stylesheet" type="text/css" href="assets/css/themes/ui-lightness/jquery-ui.min.css" />
+  <link rel="stylesheet" type="text/css" href="assets/css/themes/ui-lightness/theme.css" />
+  <link rel="stylesheet" type="text/css" href="assets/css/cytoscape.js-panzoom.css" />
+  <link rel="stylesheet" type="text/css" href="assets/css/animate.min.css" />
+
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600" rel="stylesheet">
+  
+  <!-- JQuery -->
+  <script type="text/javascript" src="assets/js/jquery.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="assets/css/codemirror.css" />
+  <link rel="stylesheet" href="assets/css/eclipse.css" />
+  <script src="assets/js/codemirror.js"></script>
+  <script src="assets/js/cypher.js"></script>
+
+  <script type="text/javascript" src="assets/js/cytoscape.js"></script>
+
+  <!-- Cytoscape.js: PlugIns -->
+  <script type="text/javascript" src="assets/js/jquery.qtip.min.js"></script>
+  <script type="text/javascript" src="assets/js/cytoscape-qtip.js"></script>
+  <script type="text/javascript" src="assets/js/cytoscape-cxtmenu.js"></script>
+  <script type="text/javascript" src="assets/js/cytoscape-automove.js"></script>
+  <script type="text/javascript" src="assets/js/cytoscape-edgehandles.js"></script>
+  <script type="text/javascript" src="assets/js/cytoscape-panzoom.js"></script>
+  <script type="text/javascript" src="assets/js/cytoscape-undo-redo.js"></script>
+  <script type="text/javascript" src="assets/js/cytoscape-view-utilities.js"></script>
+
+  <!-- Cytoscape.js: Layouts -->
+  <!--<script type="text/javascript" src="assets/js/cytoscape-arbor.js"></script> -->
+  <script type="text/javascript" src="assets/js/cola.js"></script>
+  <script type="text/javascript" src="assets/js/cytoscape-cola.js"></script>
+  <script type="text/javascript" src="assets/js/cytoscape-cose-bilkent.js"></script>
+  <script type="text/javascript" src="assets/js/dagre.js"></script>
+  <script type="text/javascript" src="assets/js/cytoscape-dagre.js"></script>
+
+  <!-- Etc. : UI, File -->
+  <script type="text/javascript" src="assets/js/jscolor.min.js"></script>
+  <script type="text/javascript" src="assets/js/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="assets/js/underscore-min.js"></script>
+  <script type="text/javascript" src="assets/js/filesaver.min.js"></script>
+  <script type="text/javascript" src="assets/js/jquery.watermark.min.js"></script>
+
+  <!-- Agens Graph Javascripts -->
+  <script type="text/javascript" src="assets/js/agens-graph-lib.js"></script>
+  
+</head>
+<body oncontextmenu="return false;" onload="runExample()">
+  <h4>
+  	AgensBrowser visualization : demo#01 
+  	<span>&nbsp;</span>
+  	<button onclick="apiCoreMeta()">get META</button>
+  	<span>&nbsp;</span>
+  	<button onclick="apiCoreQuery()">run Query</button>
+  	<span>&nbsp;</span>
+  	<button onclick="apiManagerLoadProject()">load Project</button>
+  </h4>
+  <p id="message" style="font-size:12px"></p>
+
+  <div id="cy" class="main"></div>
+
+	<script type="text/javascript">
+	// -----------------------------------------------------
+
+// API URI
+var baseUrl = 'http://localhost:8085/api';
+var baseOptions = { 
+		method: 'GET', 
+		headers: { 
+			'Authorization': 'none',
+			'Content-Type': 'application/json; charset=utf-8'
+			}, 
+		// body: '' 		// only POST
+	};
+
+var cy = null;
+var clientDTO = null;
+var metaDTO = null;
+var resultDTO = null;
+var projectDTO = null;
+
+function runExample(){
+
+	// connect
+	apiAuthConnect();
+
+	// 캔버스 생성
+  cy = agens.graph.graphFactory(
+		document.querySelector('div#cy'), 'single'
+	);
+  // when add data, adjust qtip menu to all elements
+  cy.pon('add').then(function(e){
+  	adjustCxtMenu( e.cy.elements() );
+  });
+
+}
+
+function adjustCxtMenu( collection ){
+  // mouse right button click event
+  // **NOTE: 스타일은 qtip2 참조
+  collection.qtip({
+    content: function() { 
+	    	var html = `<h4>${this.data('labels')[0]} [${this.id()}]<h4><p>`;
+	    	if( this.data('props') !== undefined ){
+	    		if( this.data('props').hasOwnProperty('id') )	html += `id: ${this.data('props').id}`;
+	    		html += '<br/>';
+		    	if( this.data('name') !== undefined ) html += `name: ${this.data('name')}`;
+		    	else if( this.data('props').hasOwnProperty('title') )	html += `name: ${this.data('props').title}`;
+	    	}
+	    	return html+'</p>';
+	    },
+    style: { classes: 'qtip-bootstrap', tip: { width: 16, height: 8 } },
+    position: { target: 'mouse', adjust: { mouse: false } },
+    events: { visible: function(event, api) { $('.qtip').click(function(){ $('.qtip').hide(); }); } },
+    show: { event: 'cxttap' },          // cxttap: mouse right button click event
+    hide: { event: 'click unfocus' }
+  });    
+}
+
+
+/////////////////////////////////////////////////////////
+//  NAMESPACE: agens.api
+/////////////////////////////////////////////////////////
+
+function apiAuthConnect(){
+	var apiUrl = baseUrl + '/auth/connect';
+	var apiOptions = jQuery.extend({}, baseOptions);		// clone object
+	document.querySelector('p#message').innerHTML = '';
+
+  // headers.Authorization = clientDTO.ssid
+	fetch( apiUrl, baseOptions )
+    .then(res => res.json())
+    .then((data) => {
+      console.log('apiAuthConnect: ', data);
+
+      if( data.hasOwnProperty('state') && data.state === 'SUCCESS' ){
+	      clientDTO = data;
+      	if( clientDTO.hasOwnProperty('ssid') ) 
+      		baseOptions.headers['Authorization'] = clientDTO.ssid;
+      }
+		})
+		.catch(err => {
+			console.error(err);
+      if ( err.hasOwnProperty('error') && err.error.hasOwnProperty('state') && err.error.hasOwnProperty('message') ) {
+        var err_message = `[${err.error.state}] ${err.error.message}<br><a href="${err.error._link}">${err.error._link}</a>`;
+				document.querySelector('p#message').innerHTML = err_message;
+      }
+		});
+}
+
+
+/////////////////////////////////////////////////////////
+//  NAMESPACE: agens.api
+/////////////////////////////////////////////////////////
+
+function apiCoreMeta(){
+	if( clientDTO === null ) return;
+	document.querySelector('p#message').innerHTML = '';
+
+	var apiUrl = baseUrl + '/core/meta';
+	var apiOptions = jQuery.extend({}, baseOptions);		// clone object
+
+  // headers.Authorization = clientDTO.ssid
+	fetch( apiUrl, apiOptions )
+    .then(res => res.json())
+    .then((data) => {
+      console.log('apiCoreMeta: ', data);
+
+      if( data.hasOwnProperty('state') && data.state === 'SUCCESS' ){
+	      metaDTO = data;
+	      if( metaDTO.hasOwnProperty('meta') ) drawGraph( metaDTO.meta );
+      }
+    	if( data.hasOwnProperty('message') ){
+				document.querySelector('p#message').innerHTML = `[${data.state}] ` + data.message;
+    	}
+		})
+		.catch(err => {
+			console.error(err);
+      if ( err.hasOwnProperty('error') && err.error.hasOwnProperty('state') && err.error.hasOwnProperty('message') ) {
+        var err_message = `[${err.error.state}] ${err.error.message}<br><a href="${err.error._link}">${err.error._link}</a>`;
+				document.querySelector('p#message').innerHTML = err_message;
+      }
+		});
+}
+
+function drawGraph( data ){
+  // clear
+  cy.elements().remove();
+  // data import
+  cy.add(data);
+  // adjust layout
+  var handler = cy.makeLayout( agens.graph.layoutTypes['cose2'] );
+  handler.pon('layoutstop').then(function(e){
+      // 화면에 맞게 elements 정렬
+      e.cy.fit( e.cy.elements(), 50 );
+	  });
+  handler.run();
+}
+
+
+/////////////////////////////////////////////////////////
+//  NAMESPACE: agens.api
+/////////////////////////////////////////////////////////
+
+function apiCoreQuery(){
+	if( clientDTO === null ) return;
+	document.querySelector('p#message').innerHTML = '';
+
+	var sql = `
+-- NOTE: this is a sample query about NORTHWIND (sample db)	
+match path=(cust:customer)-[:PURCHASED]->(r:"order")-[o:ORDERS]->(p:product)
+return path, r, id(cust), o.quantity, label(p), properties(p), (('{"a":1, "b":null}'::jsonb) -> 'b') as TEST
+limit 100;
+	`;
+	var apiUrl = baseUrl + '/core/query?'+jQuery.param({ sql: encodeURIComponent( makeupSql(sql) ) });
+	var apiOptions = jQuery.extend({}, baseOptions);		// clone object
+
+  // headers.Authorization = clientDTO.ssid
+	fetch( apiUrl, apiOptions )
+    .then(res => res.json())
+    .then((data) => {
+      console.log('apiCoreQuery: ', data);
+
+      if( data.hasOwnProperty('state') && data.state === 'SUCCESS' ){
+	      resultDTO = data;
+	      if( resultDTO.hasOwnProperty('graph') ) drawGraph( resultDTO.graph );
+      }
+    	if( data.hasOwnProperty('message') ){
+				document.querySelector('p#message').innerHTML = `[${data.state}] ` + data.message;
+    	}
+		})
+		.catch(err => {
+			console.error(err);
+      if ( err.hasOwnProperty('error') && err.error.hasOwnProperty('state') && err.error.hasOwnProperty('message') ) {
+        var err_message = `[${err.error.state}] ${err.error.message}<br><a href="${err.error._link}">${err.error._link}</a>`;
+				document.querySelector('p#message').innerHTML = err_message;
+      }
+		});
+}
+
+function makeupSql( sql ){
+	var newLines = [];
+	sql = sql.replace(/\r?\n/g, '||');
+  var lines = sql.split('||');
+	lines.forEach((val)=>{
+      val = val.trim();
+      if( !val.startsWith('--') ){
+        if( val.indexOf('--')>=0 ) newLines.push( val.substring(0, val.indexOf('--')) );
+        else newLines.push( val );
+      } 
+    });
+  return newLines.join(' ');
+}
+
+
+/////////////////////////////////////////////////////////
+//  NAMESPACE: agens.api
+/////////////////////////////////////////////////////////
+
+function apiManagerLoadProject(){
+
+	if( clientDTO === null ) return;
+	document.querySelector('p#message').innerHTML = '';
+
+	var id = 1;		// must be number
+
+	var apiUrl = baseUrl + '/manager/projects/'+id;
+	var apiOptions = jQuery.extend({}, baseOptions);		// clone object
+
+  // headers.Authorization = clientDTO.ssid
+	fetch( apiUrl, apiOptions )
+    .then(res => res.json())
+    .then((data) => {
+      console.log('apiManagerLoadProject: ', data);
+
+      if( data.hasOwnProperty('id') && data.id === id ){
+	      projectDTO = data;
+	      if( projectDTO.hasOwnProperty('graph_json') ) drawProjectGraph( projectDTO.graph_json );
+      }
+    	if( data.hasOwnProperty('title') && data.hasOwnProperty('description') ){
+				document.querySelector('p#message').innerHTML = `[${data.title}] ` + data.description;
+    	}
+		})
+		.catch(err => {
+			console.error(err);
+      if ( err.hasOwnProperty('error') && err.error.hasOwnProperty('state') && err.error.hasOwnProperty('message') ) {
+        var err_message = `[${err.error.state}] ${err.error.message} &nbsp; <a href="${err.error._link}">${err.error._link}</a>`;
+				document.querySelector('p#message').innerHTML = err_message;
+      }
+		});
+}
+
+function drawProjectGraph( data ){
+	var graphData = null;
+
+  // initialize
+  cy.elements().remove();
+
+  // json data parse
+  try{
+    graphData = JSON.parse( data );
+  }catch(ex){
+    console.log('graph_json parse error =>', ex);
+    this.openSnackBar('JSON parse error on loading project', 'ERROR');      
+  }
+
+  if( graphData !== null ){
+    // import data
+    cy.json( graphData );
+    // refresh style
+    cy.style(agens.graph.stylelist['dark']).update();
+    // 화면에 맞게 elements 정렬
+    cy.fit( cy.elements(), 50 );
+  }
+}
+
+/////////////////////////////////////////////////////////
+//  NAMESPACE: agens.api
+/////////////////////////////////////////////////////////
+
+// userFunc: 캔버스 바탕 클릭 이벤트 
+agens.api.cyCanvasCallback = function(){
+	console.log('click: Canvas');
+};
+
+// userFunc: 그래프 노드 또는 에지 클릭 이벤트 
+agens.api.cyElemCallback = function(cyTarget){
+	console.log('click: Element', cyTarget);
+};
+
+// userFunc: 그래프 노드 클릭 이벤트 
+agens.api.cyNodeCallback = function(cyTarget){
+	console.log('click: Node', cyTarget);
+};
+
+// userFunc: 그래프 에지 클릭 이벤트 
+agens.api.cyEdgeCallback = function(cyTarget){
+	console.log('click: Edge', cyTarget);
+};
+
+// userFunc: 그래프 노드의 qtip 메뉴 클릭 이벤트
+agens.api.cyQtipMenuCallback = function(cyTarget, targetName){
+	console.log(`click: cxtMenu(${targetName})`, cyTarget);
+};
+
+	// -----------------------------------------------------
+	</script>
+
+</body>
+</html>
