@@ -82,7 +82,10 @@ var baseOptions = {
 		// body: '' 		// only POST
 	};
 
+var responseHeaders = null;
+
 var cy = null;
+
 var clientDTO = null;
 var metaDTO = null;
 var resultDTO = null;
@@ -136,9 +139,18 @@ function apiAuthConnect(){
 	var apiOptions = jQuery.extend({}, baseOptions);		// clone object
 	document.querySelector('p#message').innerHTML = '';
 
+	// **참고 
+	// https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#Headers
+	apiOptions.mode = 'cors';
+
   // headers.Authorization = clientDTO.ssid
 	fetch( apiUrl, baseOptions )
-    .then(res => res.json())
+    .then(res => {
+    	console.log( res.headers.get("content-type") );					// on mode='cors', standard headers can be read
+    	console.log( res.headers.get("agens.product.name") );		// custom header cannot be read because CORS
+
+    	return res.json();
+    })
     .then((data) => {
       console.log('apiAuthConnect: ', data);
 
