@@ -105,15 +105,31 @@ order by s.similarity desc
 
 -- Great, let's now make a recommendation based on these similarity scores.
 
-MATCH path=(me:customer {id:'ANTON'})-[s:SIMILARITY]->(c:customer)-[r:RATED]->(p:product {name:'Gorgonzola Telino'})
-where me.id='ANTON' and not exists( (me)-[:RATED]->(p) )
+-- SAMPLE: 고객에 상품 하나 대입
+MATCH path=(me:customer)-[s:SIMILARITY]->(c:customer)-[r:RATED]->(p:product)
+where me.id='ANTON' and p.name='Gorgonzola Telino' and not exists( (me)-[:RATED]->(p) )
 with path, s.similarity as similarity, c.id as neighbor_name
 return path, similarity, neighbor_name
 order by similarity desc
--- with me.ID as cust_id, p.name as prod_name, sum(s.similarity::float) as similarity_sum, count(distinct c.id) as neighbors_cnt, count(r) as rating_cnt, sum(r.rating::float) as rating_sum
--- return cust_id, prod_name, similarity_sum, neighbors_cnt, rating_cnt, rating_sum
--- order by similarity_sum desc
 limit 5;
+
+
+MATCH path=(me:customer)-[s:SIMILARITY]->(c:customer)-[r:RATED]->(p:product)
+where me.id='ANTON' and not exists( (me)-[:RATED]->(p) )
+with me.id as cust_id, p.name as prod_name, avg(s.similarity::float) as sim_avg, count(r) as rating_cnt, sum(r.rating::float) as rating_sum
+where sim_avg > 0.2 and rating_cnt > 5
+return cust_id, prod_name, sim_avg, rating_cnt, rating_sum
+order by rating_sum desc
+limit 50;
+
+MATCH (me:customer)-[s:SIMILARITY]->(c:customer)-[r:RATED]->(p:product)
+where me.id='ANTON' and not exists( (me)-[:RATED]->(p) )
+with me, p, avg(s.similarity::float) as sim_avg, count(r) as rating_cnt, sum(r.rating::float) as rating_sum
+merge (me)-[:recommend {similarity_avg: to_json(sim_avg::float), rating_cnt: to_json(rating_cnt::int), rating_sum: to_json(rating_sum::float) }]->(p)
+;
+
+-- 참고 jsonb_agg( to_json(c.id::text) )
+-- ** 유사 함수로 string_agg( c.id::text, '|' )도 있음 => 'A | B | C | ..'
 
 -- 아직 미완료 쿼리
 WITH 1 as neighbours
