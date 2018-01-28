@@ -105,6 +105,16 @@ order by s.similarity desc
 
 -- Great, let's now make a recommendation based on these similarity scores.
 
+MATCH path=(me:customer {id:'ANTON'})-[s:SIMILARITY]->(c:customer)-[r:RATED]->(p:product {name:'Gorgonzola Telino'})
+where me.id='ANTON' and not exists( (me)-[:RATED]->(p) )
+with path, s.similarity as similarity, c.id as neighbor_name
+return path, similarity, neighbor_name
+order by similarity desc
+-- with me.ID as cust_id, p.name as prod_name, sum(s.similarity::float) as similarity_sum, count(distinct c.id) as neighbors_cnt, count(r) as rating_cnt, sum(r.rating::float) as rating_sum
+-- return cust_id, prod_name, similarity_sum, neighbors_cnt, rating_cnt, rating_sum
+-- order by similarity_sum desc
+limit 5;
+
 -- 아직 미완료 쿼리
 WITH 1 as neighbours
 MATCH (me:Customer)-[:SIMILARITY]->(c:Customer)-[r:RATED]->(p:Product)
