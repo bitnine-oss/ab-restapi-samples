@@ -37,7 +37,7 @@ create elabel if not exists RATED;
 MATCH (c:customer)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)
 WITH c, count(p) as total
 MATCH (c)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)
-WITH c, total, p, count(o)*1.0 as orders, round(count(o)*1.0/total,3) as rating
+WITH c, total, p, count(o) as orders, round(count(o)*1.0/total,3) as rating
 MERGE (c)-[rated:RATED {total_count: total, order_count: orders, rating: rating}]->(p)
 ;
 
