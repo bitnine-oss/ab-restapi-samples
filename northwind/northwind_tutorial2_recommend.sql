@@ -9,7 +9,7 @@
 -- To find the most popular products in the dataset, we can follow the path from `:Customer` to `:Product`
 
 match (c:customer)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product) 
-return c.companyName, p.productName, count(o) as orders
+return c.ID, p.productName, count(o) as orders
 order by orders desc
 limit 5;
 
@@ -20,9 +20,9 @@ limit 5;
 -- // table
 
 match (c:customer)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)
-<-[:orders]-(o2:"order")-[:orders]->(p2:product)-[:PART_OF]->(:category)<-[:PART_OF]-(p)
+      <-[:orders]-(o2:"order")-[:orders]->(p2:product)-[:PART_OF]->(:category)<-[:PART_OF]-(p)
 WHERE c.ID = 'ANTON' and NOT EXISTS( (c)-[:PURCHASED]->(:"order")-[:ORDERS]->(p2) )
-return c.companyName, p.productName as has_purchased, p2.productName as has_also_purchased, count(DISTINCT o2) as occurrences
+return c.ID, p.productName as has_purchased, p2.productName as has_also_purchased, count(DISTINCT o2) as occurrences
 order by occurrences desc
 limit 5;
 
@@ -54,9 +54,10 @@ WHERE me.customerID = 'ANTON' RETURN p.productName, r.rating limit 10
 -- Now we can use these ratings to compare the preferences of two Customers.
 
 -- // See Customer's Similar Ratings to Others
-match (c1:customer {customerID:'ANTON'})-[r1:RATED]->(p:product)<-[r2:RATED]-(c2:customer)
-return c1.customerID, c2.customerID, p.productName, r1.rating, r2.rating, 
-            abs(r1.rating::float-r2.rating::float) as difference
+match (c1:customer)-[r1:RATED]->(p:product)<-[r2:RATED]-(c2:customer)
+where c1.ID='ANTON'
+return c1.ID, c2.ID, p.productName, r1.rating, r2.rating, 
+       abs(r1.rating::float-r2.rating::float) as difference
 order by difference ASC
 limit 15;
 

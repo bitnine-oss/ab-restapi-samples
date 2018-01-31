@@ -44,18 +44,29 @@ limit 100;
 -- 4) COSE2 적용 
 -- 5) findNeighbors 토글 적용 ==> 서브 그래프 단위로 살펴야 관찰이 쉬움을 설명
 -- 6) 네이버와 상품을 선택 후, hide unselect 후 dagre 레이아웃 적용
+--    ==> 선택 내용만 이미지 익스포트
 
--- 6) 디테일하게 살펴보기
--- 6-1) 간단한 통계 쿼리 작성
+-- 7) ANTON 의 구매 그래프 조회
+-- 7-1) Dagre 레이아웃
+-- 7-2) order에 대한 확장 ==> 판매사원 조회 (4명)
+match path=(c:customer)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)-[:PART_OF]->(:category)
+WHERE c.ID = 'ANTON' 
+return path
+limit 100;
+
+
+-- 8) 디테일하게 살펴보기
+-- 8-1) 간단한 통계 쿼리 작성
 
 -- 고객의 구매 횟수 조회
 -- : order_cnt 가 customer에 없기 때문에 질의
 
 match (c:customer)-[:purchased]->(o:"order")
-return c, count(o) as order_cnt
+return c.id, c.name, count(o) as order_cnt
 order by order_cnt desc 
 limit 10;
 
+/*
 -- 고객의 구매 총수량 조회
 --> rated 에지 생성
 match (c:customer)-[:purchased]->(o:"order")-[r]->(p:product) 
@@ -69,21 +80,12 @@ match path = (c:customer)-[r]->(p:product)
 where (r.order_count::int) > 3
 return path
 limit 100;
- 
+
 -- 중심 노드에 customer.id='SAVEA' 선택  
 -- 너무 많아서 order_count > 3 으로 제한 
 match path = (c:customer)-[]->(o:"order")-[]-(p:product)-[]->(t:category)
 			, (c)-[r:rated]->(p)
 where c.id='SAVEA' and r.order_count::int > 3
-return path
-limit 100;
-
-
--- ANTON 의 구매 그래프 조회
--- 1) Dagre 레이아웃
--- order에 대한 확장 ==> 판매사원 조회 (4명)
-match path=(c:customer)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)-[:PART_OF]->(:category)
-WHERE c.ID = 'ANTON' 
 return path
 limit 100;
 
@@ -93,4 +95,4 @@ match path1=(c:customer)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)-[:PART
 WHERE c.ID = 'ANTON' 
 return path1, path2
 limit 100;
-
+*/
