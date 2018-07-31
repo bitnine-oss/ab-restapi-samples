@@ -1,10 +1,10 @@
 create database northwind;	
 comment on database northwind is 'Northwind sample data: customer, product, order';
 
-create graph northwind_graph;	
-comment on schema northwind_graph is 'Northwind sample data: customer, product, order';
+create graph sample01_graph;	
+comment on schema sample01_graph is 'Northwind sample data: customer, product, order';
 
-set graph_path=northwind_graph;
+set graph_path=sample01_graph;
 
 -- drop vlabel if exists product;
 create vlabel if not exists product;
@@ -15,8 +15,8 @@ create (a:product =to_jsonb(row_to_json(product_data)));
 
 -- ## update or insert
 match (a:product) set 
-	a.id = to_json(a.productid::text), 
-    a.name = to_json(a.productname::text)
+	a.id = to_json(a.productid), 
+    a.name = to_json(a.productname)
 ;
 -- ## rename label properties's key (jsonb)
 -- match (a:product) set a = a - 'productid' || jsonb_build_object('id', a->'productid');
@@ -50,8 +50,8 @@ create (a:category =to_jsonb(row_to_json(category_data)));
 
 -- ## update or insert
 match (a:category) set 
-	a.id = to_json(a.categoryid::text), 
-    a.name = to_json(a.categoryname::text)
+	a.id = to_json(a.categoryid), 
+    a.name = to_json(a.categoryname)
 ;
 -- drop property index if exists idx_category_id;
 create property index if not exists idx_category_id on category( id );
@@ -67,8 +67,8 @@ create (a:supplier =to_jsonb(row_to_json(supplier_data)));
 
 -- ## update or insert
 match (a:supplier) set 
-	a.id = to_json(a.supplierid::text), 
-    a.name = to_json(a.companyname::text)
+	a.id = to_json(a.supplierid), 
+    a.name = to_json(a.companyname)
 ;
 -- drop property index if exists idx_supplier_id;
 create property index if not exists idx_supplier_id on supplier( id );
@@ -116,8 +116,8 @@ create (a:customer =to_jsonb(row_to_json(customer_data)));
 
 -- ## update or insert
 match (a:customer) set 
-	a.id = to_json(a.customerid::text), 
-    a.name = to_json(a.contactname::text)
+	a.id = to_json(a.customerid), 
+    a.name = to_json(a.contactname)
 ;
 -- drop property index if exists idx_customer_id;
 create property index if not exists idx_customer_id on customer( id );
@@ -137,8 +137,8 @@ create (a:"order" =to_jsonb(row_to_json(order_data)));
 
 -- ## update or insert
 match (a:"order") set 
-	a.id = to_json(a.orderid::text), 
-    a.name = to_json('order_'||a.orderid::text)
+	a.id = to_json(a.orderid), 
+    a.name = to_json(a.orderid)
 ;
 -- drop property index if exists idx_order_id;
 create property index if not exists idx_order_id on "order"( id );
@@ -162,17 +162,19 @@ CREATE (c)-[:purchased]->(o)
 -- drop elabel if exists "orders";
 create elabel if not exists "orders";
 
-load from public.order_details as detail_data
-MATCH (p:product), (o:"order")
-WHERE p.id = (detail_data).productid::text AND o.id = (detail_data).orderid::text
-CREATE (o)-[d:orders {unitprice:(detail_data).unitprice,quantity:(detail_data).quantity::int,discount:(detail_data).discount}]->(p)
+LOAD FROM public.order_details AS source
+MATCH (n:"order"),(m:product)
+WHERE n.orderid=to_jsonb((source).orderid)
+    AND m.productid=to_jsonb((source).productid)
+CREATE (n)-[r:ORDERS {unitprice:(source).unitprice,quantity:(source).quantity,discount:(source).discount}]->(m);
+
 -- CREATE (o)-[d:orders =to_jsonb(row_to_json(detail_data))]->(p)
 -- set d.quantity = to_json(d.quantity::int)
 -- ******************************************
 -- **NOTE: 나중에 set d.quantity = to_json(d.quantity::int) 하는 것은 소용이 없다!!
 --         처음에 int로 집어넣어야 인식. 나중에 set 해봐야 sum() 등에서 숫자로 인식 안함 (오류!!)
 -- ******************************************
-;
+
 
 -- match ()-[d:"orders"]->() return d limit 5;
 
@@ -181,9 +183,51 @@ CREATE (o)-[d:orders {unitprice:(detail_data).unitprice,quantity:(detail_data).q
 -- **NOTE: jsonb 에 int라고 저장 했어도 SUM(o.quantity::int) 처럼 casting을 해야만 한다
 MATCH (cust:customer)-[:PURCHASED]->(:"order")-[o:ORDERS]->(p:product),
       (p)-[:PART_OF]->(c:category {categoryName:'Produce'})
-RETURN DISTINCT cust.contactName as CustomerName, SUM(o.quantity::int) AS TotalProductsPurchased
+RETURN DISTINCT cust.contactName as CustomerName, SUM(o.quantity) AS TotalProductsPurchased
 ;
 
 
+-- ===========================================
+-- == Vertex: employee
+-- ===========================================
+
+-- drop vlabel if exists "employee";
+create vlabel if not exists "employee";
+
+load from public.employees as employee_data
+create (a:"employee" =to_jsonb(row_to_json(employee_data)));
+-- match (a:"employee") return a limit 5;
+
+-- ## update or insert
+match (a:"employee") set 
+    a.id = to_json(a.employeeid), 
+    a.name = to_json(a.firstname)
+;
+-- drop property index if exists idx_employee_id;
+create property index if not exists idx_employee_id on "employee"( id );
+
+
+-- ===========================================
+-- == Edge: REPORTS_TO
+-- ===========================================
+
+-- drop elabel if exists reports_to;
+
+MATCH (e1:employee),(e2:employee)
+WHERE e1.reportsto = e2.id
+CREATE (e1)-[:reports_to]->(e2)
+;
+
+
+-- ===========================================
+-- == Edge: SOLD
+-- ===========================================
+
+-- drop elabel if exists sold;
+
+MATCH (e:employee),(o:"order")
+WHERE o.employeeid = e.id
+CREATE (e)-[:sold]->(o)
+;
 
 
