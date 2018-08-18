@@ -65,8 +65,9 @@ limit 15;
 -- Now, we can create a similarity score between two Customers using Cosine Similarity (Hat tip to Nicole White for the original Cypher query...)
 
 match (c:customer)-[r:rated]->(p:product)
-with c, count(p) as p_length , sqrt( sum( r.rating::float^2 ) ) as r_length
-set c.p_length = to_json(p_length::int), c.r_length = to_json(r_length::float) 
+with c, count(p) as p_length, sum( r.rating^2 ) as r_length2
+with c, p_length, sqrt(r_length2) as r_length 		-- sqrt 함수 같이 못써서 두줄로 분리
+set c.p_length = to_json(p_length), c.r_length = to_json(r_length)
 ;
 
 
@@ -81,20 +82,34 @@ create elabel if not exists SIMILARITY;
 -- limit 10;
 
 MATCH (c1:customer)-[r1:RATED]->(p:product)<-[r2:RATED]-(c2:customer)
-WITH c1, c2, SUM(r1.rating::float*r2.rating::float) as dot_product, count(p) as dot_length,
-c1.p_length as c1_plength, c2.p_length as c2_plength, c1.r_length as c1_rlength, c2.r_length as c2_rlength,
-SUM(r1.rating::float*r2.rating::float) / ( c1.r_length::float * c2.r_length::float ) as similarity
-merge (c1)-[:SIMILARITY { dot_product: to_json(dot_product::float), dot_length: to_json(dot_length::int), similarity: to_json(similarity::float) }]-(c2)
+WITH c1, c2, SUM(r1.rating*r2.rating) as dot_product, count(p) as dot_length,
+		c1.p_length as c1_plength, c2.p_length as c2_plength, 
+		c1.r_length as c1_rlength, c2.r_length as c2_rlength
+where to_jsonb(dot_length) >= 4				-- edge 2215 개 적용 (생략시 3617 개 적용)
+with c1, c2, dot_product, dot_length, c1_plength, c2_plength, c1_rlength, c2_rlength,
+		dot_product / ( c1.r_length * c2.r_length ) as similarity
+merge (c1)-[:SIMILARITY { 
+		dot_product: to_json(dot_product), 	-- 공통구매 상품에 대한 내적
+		dot_length: to_json(dot_length), 	  -- 공통구매 상품 개수 (크기)
+		similarity: to_json(similarity) }]-(c2)	-- cosine 유사도 (=내적/외적)
 ;
 
 -- // test
-match (c1:customer)-[s:SIMILARITY]->(c2:customer)
-return c1, s, c2
-order by c1.id, s.similarity desc
-limit 10;
+match path=(c1:customer)-[s:SIMILARITY]->(c2:customer)
+with c1, s, c2			
+where c1.ID='ANTON' and s.similarity > 0.2
+return c1.ID, s, c2.ID as c2id order by c2ID limit 10;
+
 
 -- 최상위 유사도 2명 나옴 
 -- // result: c1.ID='ANTON' and s.dot_length::int > 2 and s.similarity::float > 0.4
+match path0=(c1:customer)-[s:SIMILARITY]->(c2:customer),
+	path1=(c1)-[r1:rated]->(p:product), 
+	path2=(c2)-[r2:rated]->(p:product)
+where c1.ID='ANTON' and s.similarity > 0.4		
+return path0, path1, path2
+;
+
 match (c1:customer)-[s:SIMILARITY]->(c2:customer),
 path1=(c1)-[]->(:"order")-[]-(:product)-[]-(:category), path2=(c2)-[]->(:"order")-[]-(:product)-[]-(:category)
 where c1.ID='ANTON' and s.dot_length::int > 2 and s.similarity::float > 0.4
