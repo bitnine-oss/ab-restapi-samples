@@ -487,7 +487,7 @@
         // function that returns true if the system is stable to indicate
         // that the layout can be stopped
         stableEnergy: function (energy) {
-            let e = energy;
+            var e = energy;
             return (e.max <= 0.5) || (e.mean <= 0.3);
         },
         // infinite layout options
@@ -654,7 +654,7 @@
 */
 
       cyGraph.cyQtipMenuCallback = function( id, targetName ){
-        let cyTarget = cyGraph.elements(`node[id='${id}']`);
+        var cyTarget = cyGraph.elements(`node[id='${id}']`);
         if( cyTarget.size() == 0 ) return;
 
         // user Function
@@ -686,17 +686,17 @@
       // 이웃노드 찾기 : labels에 포함된 label을 갖는 node는 제외
       cyGraph.viewUtil._findNeighborsWithoutDuplicatedLabel = function( node, uniqLabels, maxHops ){
         // empty collection
-        let connectedNodes = agens.cy.collection();
+        var connectedNodes = agens.cy.collection();
         // if limit recursive, stop searching
         if( maxHops <= 0 ) return connectedNodes;
 
         // 새로운 label타입의 edge에 대한 connectedNodes 찾기
         // 1) 새로운 label 타입의 edges (uniqLabels에 없는)
-        let connectedEdges = node.connectedEdges().filter(function(i, ele){
+        var connectedEdges = node.connectedEdges().filter(function(i, ele){
           return uniqLabels.indexOf(ele.data('labels')[0]) < 0;
         });
         // 2) edge에 연결된 node collection을 merge (중복제거)
-        for( let i=0; i<connectedEdges.size(); i+=1 ){
+        for( var i=0; i<connectedEdges.size(); i+=1 ){
           connectedNodes = connectedNodes.merge( connectedEdges[i].connectedNodes() );
         }
         // connectedNodes = connectedNodes.difference(node);                           // 자기 자신은 빼고
@@ -710,7 +710,7 @@
         // 4) append recursive results
         maxHops -= 1;
         connectedNodes.difference(node).forEach(elem => {
-          let collection = cyGraph.viewUtil._findNeighborsWithoutDuplicatedLabel(elem, uniqLabels.slice(0), maxHops);
+          var collection = cyGraph.viewUtil._findNeighborsWithoutDuplicatedLabel(elem, uniqLabels.slice(0), maxHops);
           connectedNodes = connectedNodes.merge( collection );
         });
         // 5) return connectedNodes
@@ -731,8 +731,8 @@
         commands: [{
             content: '<span style="display:inline-block; width:20px; font-size:10pt">Reverse select</span>',
             select: function(){
-              let selected = cyGraph.elements(':selected');
-              let unselected = cyGraph.elements(':unselected');
+              var selected = cyGraph.elements(':selected');
+              var unselected = cyGraph.elements(':unselected');
               cyGraph.viewUtil.removeHighlights();
               selected.unselect();
               unselected.select();
@@ -789,9 +789,9 @@
 
     // private Function
     agens.graph.makeid = function(){
-      let text = "_id_";
-      let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      for( let i=0; i < 5; i++ )
+      var text = "_id_";
+      var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      for( var i=0; i < 5; i++ )
           text += possible.charAt(Math.floor(Math.random() * possible.length));
       return text;
     };
@@ -800,25 +800,25 @@
       if( agens.cy === null ) return;
 
       // image data
-      let pngContent = agens.cy.png({ maxWidth : '1600px', full : true, scale: 1.2 });
+      var pngContent = agens.cy.png({ maxWidth : '1600px', full : true, scale: 1.2 });
 
       // this is to remove the beginning of the pngContent: data:img/png;base64,
-      let b64data = pngContent.substr(pngContent.indexOf(",") + 1);
-      let blob = b64toBlob(b64data, "image/png");
+      var b64data = pngContent.substr(pngContent.indexOf(",") + 1);
+      var blob = b64toBlob(b64data, "image/png");
 
       // watermark 없으면 그냥 saveAs
       if( watermark === null || watermark === '' ) saveAs(blob, filename);
       // watermark 추가
       else {
-        let blobUrl = URL.createObjectURL(blob);
+        var blobUrl = URL.createObjectURL(blob);
         $('<img>', {
           src: blobUrl
         }).watermark({
           text: watermark, textSize: 40, textWidth: 800, textColor: 'white', opacity: 0.7, margin: 5,
           outputType: "png", outputWidth: 'auto', outputHeight: 'auto',
           done: function(imgURL){
-            let b64data2 = imgURL.substr(imgURL.indexOf(",") + 1);
-            let blob2 = b64toBlob(b64data2, "image/png")
+            var b64data2 = imgURL.substr(imgURL.indexOf(",") + 1);
+            var blob2 = b64toBlob(b64data2, "image/png")
             saveAs(blob2, filename);
             console.log( `image saved: "${filename}"`);
           }
@@ -831,19 +831,19 @@
       contentType = contentType || '';
       sliceSize = sliceSize || 512;
 
-      let byteCharacters = atob(b64Data);
-      let byteArrays = [];
-      for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-          let slice = byteCharacters.slice(offset, offset + sliceSize);
-          let byteNumbers = new Array(slice.length);
-          for (let i = 0; i < slice.length; i++) {
+      var byteCharacters = atob(b64Data);
+      var byteArrays = [];
+      for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+          var slice = byteCharacters.slice(offset, offset + sliceSize);
+          var byteNumbers = new Array(slice.length);
+          for (var i = 0; i < slice.length; i++) {
               byteNumbers[i] = slice.charCodeAt(i);
           }
-          let byteArray = new Uint8Array(byteNumbers);
+          var byteArray = new Uint8Array(byteNumbers);
           byteArrays.push(byteArray);
       }
 
-      let blob = new Blob(byteArrays, {type: contentType});
+      var blob = new Blob(byteArrays, {type: contentType});
       return blob;
     };
 
