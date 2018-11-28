@@ -34,11 +34,15 @@ limit 5;
 
 create elabel if not exists RATED;
 
+-- round(numeric,numeric) 이 없음 ==> round(numeric*1000)/1000 으로 처리
 MATCH (c:customer)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)
 WITH c, count(p) as total
 MATCH (c)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)
-WITH c, total, p, count(o) as orders, round(count(o)*1.0/total,3) as rating
-MERGE (c)-[rated:RATED {total_count: total, order_count: orders, rating: rating}]->(p)
+WITH c, total, p, count(o) as orders
+with c, total, p, orders, round(orders*1000.0/total)/1000.0 as rating
+MERGE (c)-[rated:RATED {
+		   total_count: to_jsonb(total), order_count: to_jsonb(orders), rating: to_jsonb(rating)
+		   }]->(p)
 ;
 
 MATCH path = (c:customer)-[r:RATED]->(p:product)
