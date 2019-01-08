@@ -8,7 +8,7 @@
 -- ### Popular Products
 -- To find the most popular products in the dataset, we can follow the path from `:Customer` to `:Product`
 
-match (c:customer)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product) 
+match (c:customer)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)
 return c.ID, p.productName, count(o) as orders
 order by orders desc
 limit 5;
@@ -61,7 +61,7 @@ WHERE me.customerID = 'ANTON' RETURN p.productName, r.rating limit 10
 -- // See Customer's Similar Ratings to Others
 match (c1:customer)-[r1:RATED]->(p:product)<-[r2:RATED]-(c2:customer)
 where c1.ID='ANTON'
-return c1.ID, c2.ID, p.productName, r1.rating, r2.rating, 
+return c1.ID, c2.ID, p.productName, r1.rating, r2.rating,
        abs(r1.rating-r2.rating) as difference
 order by difference ASC
 limit 15;
@@ -89,12 +89,12 @@ create elabel if not exists SIMILARITY;
 -- INSERT EDGE 2215
 MATCH (c1:customer)-[r1:RATED]->(p:product)<-[r2:RATED]-(c2:customer)
 WITH c1, c2, SUM( float8(r1.rating*r2.rating)) as dot_product, count(p) as dot_length,
-		c1.p_length as c1_plength, c2.p_length as c2_plength, 
+		c1.p_length as c1_plength, c2.p_length as c2_plength,
 		c1.r_length as c1_rlength, c2.r_length as c2_rlength
 where dot_length >= 4								-- edge 2215 개 적용 (생략시 3617 개 적용)
 with c1, c2, dot_product, dot_length, c1_plength, c2_plength, c1_rlength, c2_rlength,
 		dot_product / ( c1.r_length * c2.r_length ) as similarity
-merge (c1)-[:SIMILARITY { 
+merge (c1)-[:SIMILARITY {
 		dot_product: dot_product, 			-- 공통구매 상품에 대한 내적
 		dot_length: dot_length, 	  		-- 공통구매 상품 개수 (크기)
 		similarity: similarity }]-(c2)	-- cosine 유사도 (=내적/외적)
@@ -102,17 +102,17 @@ merge (c1)-[:SIMILARITY {
 
 -- // test
 match path=(c1:customer)-[s:SIMILARITY]->(c2:customer)
-with c1, s, c2			
+with c1, s, c2
 where c1.ID='ANTON' and s.similarity > 0.2
 return c1.ID, s, c2.ID as c2id order by c2ID limit 10;
 
 
--- 최상위 유사도 2명 나옴 
+-- 최상위 유사도 2명 나옴
 -- // result: c1.ID='ANTON' and s.dot_length::int > 2 and s.similarity::float > 0.4
 match path0=(c1:customer)-[s:SIMILARITY]->(c2:customer),
-	path1=(c1)-[r1:rated]->(p:product), 
+	path1=(c1)-[r1:rated]->(p:product),
 	path2=(c2)-[r2:rated]->(p:product)
-where c1.ID='ANTON' and s.similarity > 0.4		
+where c1.ID='ANTON' and s.similarity > 0.4
 return path0, path1, path2
 ;
 
@@ -138,7 +138,7 @@ limit 5;
 
 MATCH path=(me:customer)-[s:SIMILARITY]->(c:customer)-[r:RATED]->(p:product)
 where me.id='ANTON' and not exists( (me)-[:RATED]->(p) )
-with me.id as cust_id, p.name as prod_name, avg( float8(s.similarity)) as sim_avg, 
+with me.id as cust_id, p.name as prod_name, avg( float8(s.similarity)) as sim_avg,
 			count(r) as rating_cnt, sum( float8(r.rating)) as rating_sum
 where sim_avg > 0.2 and rating_cnt > 5
 return cust_id, prod_name, sim_avg, rating_cnt, rating_sum
@@ -153,8 +153,8 @@ MATCH (me:customer)-[s:SIMILARITY]->(c:customer)-[r:RATED]->(p:product)
 where me.id='ANTON' and not exists( (me)-[:RATED]->(p) )
 with me, p, avg( float8(s.similarity)) as sim_avg, count(r) as rating_cnt, sum( float8(r.rating)) as rating_sum
 merge (me)-[:recommend {
-			similarity_avg: sim_avg, 
-			rating_cnt: rating_cnt, 
+			similarity_avg: sim_avg,
+			rating_cnt: rating_cnt,
 			rating_sum: rating_sum
 		}]->(p)
 ;
@@ -171,5 +171,27 @@ WITH p, COLLECT(r.rating)[0..neighbours] as ratings, collect(c.companyName)[0..n
 WITH p, customers, REDUCE(s=0,i in ratings | s+i) / LENGTH(ratings)  as recommendation
 ORDER BY recommendation DESC
 RETURN p.productName, customers, recommendation LIMIT 10
+*/
+
+-- ///////////////////////////////////////////
+-- //
+-- // Fake data for demo of find Cycle paths
+-- //
+-- ///////////////////////////////////////////
+
+drop elabel if exists blind_tester cascade;
+create elabel if not exists blind_tester;
+
+-- INSERT EDGE 2
+match (t:category), (c:customer)
+where id(t)='4.8' and to_jsonb(id(c)) in ['8.33','8.74']
+create (t)-[:blind_tester]->(c);
+
+/*
+-- test query for finding Cycle-paths
+match path1=(c:customer)-[]->(:"order")-[]->(p:product)-[]-(t:category)
+where c.id in ['CENTC','NORTS','SPECD','GROSR','THEBI','FRANR'] and t.id in [4,8,7]
+match path2=(:category)-[]->(customer)
+return path1, path2;
 */
 
