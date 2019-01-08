@@ -32,16 +32,17 @@ limit 5;
 
 -- The first thing we need to do to make this model work is create some "ratings relationships".  For now, let's create a score somewhere between 0 and 1 for each product based on the number of times a customer has purchased a product.
 
+drop elabel if exists RATED cascade;	-- Don't worry. Connected vlabels are not deleted
 create elabel if not exists RATED;
 
--- round(numeric,numeric) 이 없음 ==> round(numeric*1000)/1000 으로 처리
+-- round(numeric,numeric) does not exist ==> replace to use round(numeric*1000)/1000
 MATCH (c:customer)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)
 WITH c, count(p) as total
 MATCH (c)-[:PURCHASED]->(o:"order")-[:ORDERS]->(p:product)
 WITH c, total, p, count(o) as orders
 with c, total, p, orders, round(orders*1000.0/total)/1000.0 as rating
 MERGE (c)-[rated:RATED {
-		   total_count: to_jsonb(total), order_count: to_jsonb(orders), rating: to_jsonb(rating)
+		   total_count: total, order_count: orders, rating: rating
 		   }]->(p)
 ;
 
@@ -61,7 +62,7 @@ WHERE me.customerID = 'ANTON' RETURN p.productName, r.rating limit 10
 match (c1:customer)-[r1:RATED]->(p:product)<-[r2:RATED]-(c2:customer)
 where c1.ID='ANTON'
 return c1.ID, c2.ID, p.productName, r1.rating, r2.rating, 
-       abs(r1.rating::float-r2.rating::float) as difference
+       abs(r1.rating-r2.rating) as difference
 order by difference ASC
 limit 15;
 
@@ -69,9 +70,9 @@ limit 15;
 -- Now, we can create a similarity score between two Customers using Cosine Similarity (Hat tip to Nicole White for the original Cypher query...)
 
 match (c:customer)-[r:rated]->(p:product)
-with c, count(p) as p_length, sum( r.rating^2 ) as r_length2
+with c, count(p) as p_length, sum( float8(r.rating^2)) as r_length2
 with c, p_length, sqrt(r_length2) as r_length 		-- sqrt 함수 같이 못써서 두줄로 분리
-set c.p_length = to_json(p_length), c.r_length = to_json(r_length)
+set c.p_length = p_length, c.r_length = r_length
 ;
 
 
@@ -85,17 +86,18 @@ create elabel if not exists SIMILARITY;
 -- return c1, c2, dot_product, dot_length, similarity
 -- limit 10;
 
+-- INSERT EDGE 2215
 MATCH (c1:customer)-[r1:RATED]->(p:product)<-[r2:RATED]-(c2:customer)
-WITH c1, c2, SUM(r1.rating*r2.rating) as dot_product, count(p) as dot_length,
+WITH c1, c2, SUM( float8(r1.rating*r2.rating)) as dot_product, count(p) as dot_length,
 		c1.p_length as c1_plength, c2.p_length as c2_plength, 
 		c1.r_length as c1_rlength, c2.r_length as c2_rlength
-where to_jsonb(dot_length) >= 4				-- edge 2215 개 적용 (생략시 3617 개 적용)
+where dot_length >= 4								-- edge 2215 개 적용 (생략시 3617 개 적용)
 with c1, c2, dot_product, dot_length, c1_plength, c2_plength, c1_rlength, c2_rlength,
 		dot_product / ( c1.r_length * c2.r_length ) as similarity
 merge (c1)-[:SIMILARITY { 
-		dot_product: to_json(dot_product), 	-- 공통구매 상품에 대한 내적
-		dot_length: to_json(dot_length), 	  -- 공통구매 상품 개수 (크기)
-		similarity: to_json(similarity) }]-(c2)	-- cosine 유사도 (=내적/외적)
+		dot_product: dot_product, 			-- 공통구매 상품에 대한 내적
+		dot_length: dot_length, 	  		-- 공통구매 상품 개수 (크기)
+		similarity: similarity }]-(c2)	-- cosine 유사도 (=내적/외적)
 ;
 
 -- // test
@@ -116,7 +118,7 @@ return path0, path1, path2
 
 match (c1:customer)-[s:SIMILARITY]->(c2:customer),
 path1=(c1)-[]->(:"order")-[]-(:product)-[]-(:category), path2=(c2)-[]->(:"order")-[]-(:product)-[]-(:category)
-where c1.ID='ANTON' and s.dot_length::int > 2 and s.similarity::float > 0.4
+where c1.ID='ANTON' and s.dot_length > 2 and s.similarity > 0.4
 return path1, path2, s
 order by s.similarity desc
 ;
@@ -136,21 +138,31 @@ limit 5;
 
 MATCH path=(me:customer)-[s:SIMILARITY]->(c:customer)-[r:RATED]->(p:product)
 where me.id='ANTON' and not exists( (me)-[:RATED]->(p) )
-with me.id as cust_id, p.name as prod_name, avg(s.similarity::float) as sim_avg, count(r) as rating_cnt, sum(r.rating::float) as rating_sum
+with me.id as cust_id, p.name as prod_name, avg( float8(s.similarity)) as sim_avg, 
+			count(r) as rating_cnt, sum( float8(r.rating)) as rating_sum
 where sim_avg > 0.2 and rating_cnt > 5
 return cust_id, prod_name, sim_avg, rating_cnt, rating_sum
 order by rating_sum desc
 limit 50;
 
+
+create elabel if not exists recommend;
+
+-- INSERT EDGE 62
 MATCH (me:customer)-[s:SIMILARITY]->(c:customer)-[r:RATED]->(p:product)
 where me.id='ANTON' and not exists( (me)-[:RATED]->(p) )
-with me, p, avg(s.similarity::float) as sim_avg, count(r) as rating_cnt, sum(r.rating::float) as rating_sum
-merge (me)-[:recommend {similarity_avg: to_json(sim_avg::float), rating_cnt: to_json(rating_cnt::int), rating_sum: to_json(rating_sum::float) }]->(p)
+with me, p, avg( float8(s.similarity)) as sim_avg, count(r) as rating_cnt, sum( float8(r.rating)) as rating_sum
+merge (me)-[:recommend {
+			similarity_avg: sim_avg, 
+			rating_cnt: rating_cnt, 
+			rating_sum: rating_sum
+		}]->(p)
 ;
 
 -- 참고 jsonb_agg( to_json(c.id::text) )
 -- ** 유사 함수로 string_agg( c.id::text, '|' )도 있음 => 'A | B | C | ..'
 
+/*
 -- 아직 미완료 쿼리
 WITH 1 as neighbours
 MATCH (me:Customer)-[:SIMILARITY]->(c:Customer)-[r:RATED]->(p:Product)
@@ -159,5 +171,5 @@ WITH p, COLLECT(r.rating)[0..neighbours] as ratings, collect(c.companyName)[0..n
 WITH p, customers, REDUCE(s=0,i in ratings | s+i) / LENGTH(ratings)  as recommendation
 ORDER BY recommendation DESC
 RETURN p.productName, customers, recommendation LIMIT 10
-
+*/
 

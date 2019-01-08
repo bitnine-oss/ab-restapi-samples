@@ -1,5 +1,5 @@
 graph = TinkerGraph.open()
-graph.io(graphson()).readGraph('/Users/bgmin/Workspaces/agens-browser/dev_1.3/backend/temp/gid_1038.json')
+graph.io(graphson()).readGraph('temp/gid_1038.json')
 g = graph.traversal()
 
 g.V().sample(5).id()

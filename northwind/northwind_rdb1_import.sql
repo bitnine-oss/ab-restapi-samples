@@ -1,4 +1,7 @@
-﻿--
+﻿-- create database northwind;   
+-- comment on database northwind is 'Northwind sample data: customer, product, order';
+
+--
 -- PostgreSQL database dump
 --
 

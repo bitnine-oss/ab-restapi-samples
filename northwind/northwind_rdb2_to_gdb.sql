@@ -1,6 +1,3 @@
-create database northwind;	
-comment on database northwind is 'Northwind sample data: customer, product, order';
-
 create graph sample01_graph;	
 comment on schema sample01_graph is 'Northwind sample data: customer, product, order';
 
