@@ -195,3 +195,47 @@ match path2=(:category)-[]->(customer)
 return path1, path2;
 */
 
+-- ///////////////////////////////////////////
+-- //
+-- // Fake data for demo of find Cycle paths
+-- //
+-- ///////////////////////////////////////////
+
+-- verify whether plpython extension is installed
+select name, default_version, installed_version 
+from pg_available_extensions 
+where name like 'plpy%';
+
+-- verify whether plpython language is registered
+select lanname from pg_language;
+-- if not, create language
+create language plpython2u;
+
+-- sample code of plpython function
+set search_path=sample01_graph;		-- path to save functions 
+
+-- sample01 : pymax(a,b)
+CREATE FUNCTION pymax (a integer, b integer)
+  RETURNS integer
+AS $$
+  if a > b:
+    return a
+  return b
+$$ LANGUAGE plpython2u;
+
+-- sample01 : pytest01()
+CREATE FUNCTION pytest01 ()
+  RETURNS text
+AS $$
+  sql_query = 'match (a) return a limit 1;'
+  result = []
+  try:
+  	result = plpy.execute(sql_query, 1)		# optional parameter: max-rows
+  except plpy.SPIError, e:
+  	return 'plpy error: SQLSTATE %s' % e.SQLSTATE
+
+  if( len(result) == 0):
+  	return 'no result'	
+  return result[0]['a']		# [row_index][column_name] ==> value
+$$ LANGUAGE plpython2u;
+

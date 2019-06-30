@@ -1,0 +1,839 @@
+{
+    "nodes" : [
+        {
+            "object" : "table",
+            "name" : "categories",
+            "size" : 8,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "categoryid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "categoryname",
+                    "type" : "character varying",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "description",
+                    "type" : "text",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "picture",
+                    "type" : "bytea",
+                    "constraints" : "",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "customercustomerdemo",
+            "size" : 0,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "customerid",
+                    "type" : "bpchar",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "customertypeid",
+                    "type" : "bpchar",
+                    "constraints" : "not_null",
+                    "primary_key" : 2
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "customerdemographics",
+            "size" : 0,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "customertypeid",
+                    "type" : "bpchar",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "customerdesc",
+                    "type" : "text",
+                    "constraints" : "",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "customers",
+            "size" : 10,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "customerid",
+                    "type" : "bpchar",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "companyname",
+                    "type" : "character varying",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "contactname",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "contacttitle",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "address",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "city",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "region",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "postalcode",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "country",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "phone",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "fax",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "employees",
+            "size" : 10,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "employeeid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "lastname",
+                    "type" : "character varying",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "firstname",
+                    "type" : "character varying",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "title",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "titleofcourtesy",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "birthdate",
+                    "type" : "date",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "hiredate",
+                    "type" : "date",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "address",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "city",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "region",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "postalcode",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "country",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "homephone",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "extension",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "photo",
+                    "type" : "bytea",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "notes",
+                    "type" : "text",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "reportsto",
+                    "type" : "smallint",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "photopath",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "employeeterritories",
+            "size" : 0,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "employeeid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "territoryid",
+                    "type" : "character varying",
+                    "constraints" : "not_null",
+                    "primary_key" : 2
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "order_details",
+            "size" : 10,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "orderid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "productid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 2
+                },
+                {
+                    "object" : "column",
+                    "name" : "unitprice",
+                    "type" : "real",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "quantity",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "discount",
+                    "type" : "real",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "orders",
+            "size" : 10,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "orderid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "customerid",
+                    "type" : "bpchar",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "employeeid",
+                    "type" : "smallint",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "orderdate",
+                    "type" : "date",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "requireddate",
+                    "type" : "date",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "shippeddate",
+                    "type" : "date",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "shipvia",
+                    "type" : "smallint",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "freight",
+                    "type" : "real",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "shipname",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "shipaddress",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "shipcity",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "shipregion",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "shippostalcode",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "shipcountry",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "products",
+            "size" : 10,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "productid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "productname",
+                    "type" : "character varying",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "supplierid",
+                    "type" : "smallint",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "categoryid",
+                    "type" : "smallint",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "quantityperunit",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "unitprice",
+                    "type" : "real",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "unitsinstock",
+                    "type" : "smallint",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "unitsonorder",
+                    "type" : "smallint",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "reorderlevel",
+                    "type" : "smallint",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "discontinued",
+                    "type" : "integer",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "region",
+            "size" : 10,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "regionid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "regiondescription",
+                    "type" : "bpchar",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "shippers",
+            "size" : 10,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "shipperid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "companyname",
+                    "type" : "character varying",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "phone",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "suppliers",
+            "size" : 10,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "supplierid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "companyname",
+                    "type" : "character varying",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "contactname",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "contacttitle",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "address",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "city",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "region",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "postalcode",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "country",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "phone",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "fax",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "homepage",
+                    "type" : "text",
+                    "constraints" : "",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "territories",
+            "size" : 10,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "territoryid",
+                    "type" : "character varying",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "territorydescription",
+                    "type" : "bpchar",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "regionid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 0
+                }
+            ]
+        },
+        {
+            "object" : "table",
+            "name" : "usstates",
+            "size" : 10,
+            "columns": [
+                {
+                    "object" : "column",
+                    "name" : "stateid",
+                    "type" : "smallint",
+                    "constraints" : "not_null",
+                    "primary_key" : 1
+                },
+                {
+                    "object" : "column",
+                    "name" : "statename",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "stateabbr",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                },
+                {
+                    "object" : "column",
+                    "name" : "stateregion",
+                    "type" : "character varying",
+                    "constraints" : "",
+                    "primary_key" : 0
+                }
+            ]
+        }
+    ],
+    "edges" : [
+        {
+            "object" : "fk",
+            "name" : "fk_orders_customers",
+            "target_table" : "orders",
+            "target_column" : "customerid",
+            "source_table" : "customers"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_orders_employees",
+            "target_table" : "orders",
+            "target_column" : "employeeid",
+            "source_table" : "employees"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_orders_shippers",
+            "target_table" : "orders",
+            "target_column" : "shipvia",
+            "source_table" : "shippers"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_order_details_products",
+            "target_table" : "order_details",
+            "target_column" : "productid",
+            "source_table" : "products"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_order_details_orders",
+            "target_table" : "order_details",
+            "target_column" : "orderid",
+            "source_table" : "orders"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_products_categories",
+            "target_table" : "products",
+            "target_column" : "categoryid",
+            "source_table" : "categories"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_products_suppliers",
+            "target_table" : "products",
+            "target_column" : "supplierid",
+            "source_table" : "suppliers"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_territories_region",
+            "target_table" : "territories",
+            "target_column" : "regionid",
+            "source_table" : "region"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_employeeterritories_territories",
+            "target_table" : "employeeterritories",
+            "target_column" : "territoryid",
+            "source_table" : "territories"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_employeeterritories_employees",
+            "target_table" : "employeeterritories",
+            "target_column" : "employeeid",
+            "source_table" : "employees"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_customercustomerdemo_customerdemographics",
+            "target_table" : "customercustomerdemo",
+            "target_column" : "customertypeid",
+            "source_table" : "customerdemographics"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_customercustomerdemo_customers",
+            "target_table" : "customercustomerdemo",
+            "target_column" : "customerid",
+            "source_table" : "customers"
+        },
+        {
+            "object" : "fk",
+            "name" : "fk_employees_employees",
+            "target_table" : "employees",
+            "target_column" : "reportsto",
+            "source_table" : "employees"
+        }
+    ]
+}
